@@ -1,0 +1,14 @@
+[Unit]
+Description=a tiny API server that resolves hostname IP addresses
+After=nginx.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+Restart=on-failure
+WorkingDirectory=/opt/<your-path-here>
+ExecStart=/opt/<your-path-here>/host2ip
+
+[Install]
+WantedBy=multi-user.target
