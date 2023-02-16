@@ -94,10 +94,16 @@ func createRouter() *http.ServeMux {
 }
 
 func main() {
-	fmt.Printf("%s HOST2IP API service v%s %s\n\n", HEART, VERSION, HEART)
+	fmt.Printf("%s host2ip API service v%s %s\n\n", HEART, VERSION, HEART)
 	flag.Parse()
 
 	fmt.Printf("Serving at %s and port %d ...\n", listenAddress, listenPort)
+
+	apiKey = strings.TrimSpace(apiKey)
+	if len(apiKey) == 0 {
+		fmt.Println("*** NO API KEY: The server is open to public queries")
+	}
+
 	if err := http.ListenAndServe(fmt.Sprintf("%s:%d",
 		listenAddress, listenPort), createRouter()); err != nil {
 		fmt.Printf("Error: %v\n", err)
