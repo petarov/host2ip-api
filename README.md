@@ -30,6 +30,20 @@ Example query:
 }
 ```
 
+When using a key via the `-apikey` parameter the query would look like:
+
+    curl -s http://localhost:7029/lookup/google.bg?key=YOUR_KEY | jq
+
+# Run on Docker
+
+To create and install a Docker image called `github.com/petarov/host2ip-api` run:
+
+    make docker
+
+To run the container run:
+
+    make docker-run
+
 # License 
 
 [MIT](LICENSE)

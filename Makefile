@@ -1,6 +1,13 @@
-EXEC_NAME_PREFIX=host2ip
-BULD_FLAGS=
-LDLFAGS="-s -w"
+# go compile stuff
+EXEC_NAME_PREFIX	= host2ip
+BULD_FLAGS			=
+LDLFAGS				= "-s -w"
+# docker stuff
+DOCKER				= docker
+CONTAINER			= host2api
+IMG_NAME			= github.com/petarov/host2ip-api
+IMG_TAG				= latest
+
 
 .PHONY: all
 
@@ -11,11 +18,21 @@ all: clean build dist
 	GOOS=linux GOARCH=amd64 go build $(BULD_FLAGS) -ldflags $(LDLFAGS) -o $(EXEC_NAME_PREFIX)_linux_amd64
 	GOOS=windows GOARCH=amd64 go build $(BULD_FLAGS) -ldflags $(LDLFAGS) -o $(EXEC_NAME_PREFIX)_windows_amd64.exe
 
+.PHONY: dist
 dist:
 	test -d dist || mkdir -p dist/
 	mv $(EXEC_NAME_PREFIX)_* dist/
 
+.PHONY: clean
 clean:
 	@rm -f $(EXEC_NAME_PREFIX)_*
 	@test -d dist && @rm -f dist/$(EXEC_NAME_PREFIX)~
 	@test -d dist && @rmdir dist
+
+.PHONY: docker
+docker:
+	$(DOCKER) build . -t ${IMG_NAME}:${IMG_TAG}
+
+.PHONY: docker-run
+docker-run:
+	$(DOCKER) run -p 7029:7029/tcp --name ${CONTAINER} ${IMG_NAME}:${IMG_TAG}
