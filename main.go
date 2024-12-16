@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 
 const (
@@ -104,9 +107,22 @@ func main() {
 		fmt.Println("*** NO API KEY: The server is open to public queries")
 	}
 
-	if err := http.ListenAndServe(fmt.Sprintf("%s:%d",
-		listenAddress, listenPort), createRouter()); err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(-1)
+	background := context.Background()
+	ctx, cancel := signal.NotifyContext(background, os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
+	errCh := make(chan error, 1)
+
+	go func() {
+		if err := http.ListenAndServe(fmt.Sprintf("%s:%d", listenAddress, listenPort), createRouter()); err != nil {
+			errCh <- err
+		}
+	}()
+
+	select {
+	case err := <-errCh:
+		fmt.Printf("server error: %v\n", err)
+	case <-ctx.Done():
+		fmt.Printf("\n%s Goodbye.\n", HEART)
 	}
 }
