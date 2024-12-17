@@ -29,10 +29,10 @@ clean:
 	@test -d dist && @rm -f dist/$(BIN_NAME_PREFIX)~
 	@test -d dist && @rmdir dist
 
-.PHONY: docker
-docker:
+.PHONY: build-docker
+build-docker:
 	$(DOCKER) build . -t ${IMG_NAME}:${IMG_TAG}
 
-.PHONY: docker-run
-docker-run:
+.PHONY: run-docker
+run-docker:
 	$(DOCKER) run -p 7029:7029/tcp --name ${CONTAINER} ${IMG_NAME}:${IMG_TAG}

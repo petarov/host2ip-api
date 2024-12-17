@@ -38,11 +38,11 @@ When using a key via the `-apikey` parameter the query would look like:
 
 To create and install a Docker image called `github.com/petarov/host2ip-api` run:
 
-    make docker
+    make build-docker
 
 To run the container run:
 
-    make docker-run
+    make run-docker
 
 # License 
 
