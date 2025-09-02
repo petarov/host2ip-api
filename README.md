@@ -8,6 +8,7 @@ List of available API calls:
 
 - `/` - shows available junctions
 - `/lookup/:name` - fetches a list of IP addresses for the specified FQDN or hostname
+- `/lookups` - fetches IP addresses for multiple hostnames
 
 # Usage
 
@@ -27,6 +28,29 @@ Example query:
     "172.217.16.131",
     "2a00:1450:4001:808::2003"
   ]
+}
+```
+
+Example multiple hostname query:
+
+    curl -s http://localhost:7029/lookups?host=google.bg&host=github.com | jq
+
+```json
+{
+  "google.bg": {
+    "addresses": [
+      "172.217.16.131",
+      "2a00:1450:4001:808::2003"
+    ]
+  },
+  "github.com": {
+    "addresses": [
+      "140.82.113.4",
+      "140.82.113.5",
+      "140.82.113.6",
+      "140.82.113.7"
+    ]
+  }
 }
 ```
 

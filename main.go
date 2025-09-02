@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	VERSION           = "1.0"
+	VERSION           = "1.1"
 	HEART             = "\u2764"
 	DEFAULT_PORT      = 7029
 	CONTENT_TYPE_JSON = "application/json"
@@ -39,6 +39,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	routes := map[string]string{
 		"/":             "Shows this",
 		"/lookup/:name": "Fetches a list of IP addresses for the specified FQDN or hostname",
+		"/lookups":      "Fetches IP addresses for multiple domains (pass domains as ?host=domain1&host=domain2)",
 	}
 	resp, _ := json.Marshal(routes)
 	w.Header().Set("Content-Type", CONTENT_TYPE_JSON)
@@ -88,11 +89,57 @@ func handleLookup(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
+func handleLookups(w http.ResponseWriter, r *http.Request) {
+	key := strings.TrimSpace(r.URL.Query().Get("key"))
+	if len(apiKey) > 0 && apiKey != key {
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprintf(w, "Unauthorized")
+		return
+	}
+
+	// Get all hosts from query parameters - multiple hosts can be passed as ?host=domain1&host=domain2
+	hosts := r.URL.Query()["host"]
+
+	if len(hosts) == 0 {
+		writeError(w, http.StatusBadRequest, fmt.Errorf("no hosts specified"))
+		return
+	}
+
+	response := make(map[string]interface{})
+
+	for _, host := range hosts {
+		host = strings.TrimSpace(host)
+		if len(host) == 0 {
+			continue
+		}
+
+		ips, err := net.LookupIP(host)
+		if err != nil {
+			response[host] = map[string]interface{}{
+				"error": err.Error(),
+			}
+		} else {
+			arr := make([]string, 0)
+			for _, ip := range ips {
+				arr = append(arr, ip.String())
+			}
+			response[host] = map[string]interface{}{
+				"addresses": arr,
+			}
+		}
+	}
+
+	resp, _ := json.Marshal(response)
+	w.Header().Set("Content-Type", CONTENT_TYPE_JSON)
+	w.Write(resp)
+}
+
 func createRouter() *http.ServeMux {
 	router := http.NewServeMux()
 	router.HandleFunc("/", handleIndex)
 	router.HandleFunc("/lookup", handleLookup)
 	router.HandleFunc("/lookup/", handleLookup)
+	router.HandleFunc("/lookups", handleLookups)
 	return router
 }
 
